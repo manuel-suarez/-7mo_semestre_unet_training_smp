@@ -6,7 +6,9 @@ import pandas as pd
 import segmentation_models_pytorch as smp
 
 from data import CimatDataset
+from torch import nn, optim
 from torch.utils.data import DataLoader
+from catalyst import dl, utils
 
 if __name__ == "__main__":
     # Load command arguments
@@ -17,10 +19,11 @@ if __name__ == "__main__":
     print(args)
 
     # Use SLURM array environment variables to determine training and cross validation set number
-    slurm_array_job_id = int(os.getenv("SLURM_ARRAY_JOB_ID"))
-    slurm_array_task_id = int(os.getenv("SLURM_ARRAY_TASK_ID"))
-    print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
-    print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
+    # slurm_array_job_id = int(os.getenv("SLURM_ARRAY_JOB_ID"))
+    # slurm_array_task_id = int(os.getenv("SLURM_ARRAY_TASK_ID"))
+    # print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
+    # print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
+    slurm_array_task_id = 1
 
     train_file = "{:02}".format(slurm_array_task_id)
     cross_file = "{:02}".format(slurm_array_task_id)
@@ -64,10 +67,11 @@ if __name__ == "__main__":
         features_path=feat_dir,
         features_ext=".tiff",
         features_channels=feat_channels,
-        labels_path=labl_dir,dims
+        labels_path=labl_dir,
         labels_ext=".pgm",
         dimensions=[224, 224, 3],
     )
+
     cross_dataset = CimatDataset(
         keys=cross_keys,
         features_path=feat_dir,
@@ -79,42 +83,36 @@ if __name__ == "__main__":
     )
     print(f"Training dataset length: {len(train_dataset)}")
     print(f"Cross validation dataset length: {len(cross_dataset)}")
-    
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
+
+    train_dataloader = DataLoader(
+        train_dataset, batch_size=8, shuffle=True, num_workers=12
+    )
+    cross_dataloader = DataLoader(
+        cross_dataset, batch_size=1, shuffle=False, num_workers=4
+    )
 
     # Load and configure model (segmentation_models_pytorch)
     model = smp.Unet(
-        encoder_name='resnet34',
-        encoder_weights=None,
-        classes=2,
-        activation='sigmoid'
+        encoder_name="resnet34", encoder_weights=None, classes=1, activation="sigmoid"
     )
-    loss = smp.losses.SoftCrossEntropyLoss()
-    metrics = [
-        smp.metrics.accuracy    
-    ]
-    optimizer = torch.optim.Adam()
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    loaders = {"train": train_dataloader, "valid": cross_dataloader}
 
-    # Training epochs
-    train_epoch = smp.utils.train.TrainEpoch(
-        model,
-        loss=loss,
-        metrics=metrics,
+    # Training
+    runner = dl.SupervisedRunner(
+        input_key="features", output_key="logits", target_key="targets", loss_key="loss"
+    )
+    # Model training
+    runner.train(
+        model=model,
+        criterion=criterion,
         optimizer=optimizer,
-        device='CUDA',
+        loaders=loaders,
+        num_epochs=int(args.num_epochs),
+        logdir="./logs",
+        valid_loader="valid",
+        valid_metric="loss",
+        minimize_valid_metric=True,
         verbose=True,
     )
-    cross_epoch = smp.utils.train.ValidEpoch(
-        model,
-        loss=loss,
-        metrics=metrics,
-        device='CUDA',
-        verbose=True,
-    )
-
-    # Train model
-    for i in range(0, args.num_epochs):
-        print('\nEpoch: {}'.format(i))
-        train_logs = train_epoch.run(train_loader)
-        valid_logs = cross_epoch.run(cross_loader)
