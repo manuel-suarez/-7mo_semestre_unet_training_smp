@@ -13,7 +13,7 @@ class CimatDataset(Dataset):
         features_channels,
         labels_path,
         labels_ext,
-        dims,
+        dimensions,
     ):
         super().__init__()
         self.keys = keys
@@ -22,7 +22,7 @@ class CimatDataset(Dataset):
         self.features_channels = features_channels
         self.features_ext = features_ext
         self.labels_ext = labels_ext
-        self.dims = dims
+        self.dims = dimensions
 
     def __len__(self):
         return len(self.keys)
