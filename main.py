@@ -12,6 +12,7 @@ from module import CimatModule
 from tqdm import tqdm
 from torch import nn, optim
 from torch.utils.data import DataLoader
+from lightning.pytorch.loggers import CSVLogger
 
 if __name__ == "__main__":
     # Load command arguments
@@ -53,8 +54,11 @@ if __name__ == "__main__":
     )
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    logger = CSVLogger(os.path.join(f"logs_dataset{train_file}"), name="results.csv")
     module = CimatModule(model, optimizer, loss_fn)
-    trainer = L.Trainer(max_epochs=int(args.num_epochs), devices=2, accelerator="gpu")
+    trainer = L.Trainer(
+        max_epochs=int(args.num_epochs), devices=2, accelerator="gpu", logger=logger
+    )
     # Training
     print("[INFO] training the network...")
     startTime = time.time()
