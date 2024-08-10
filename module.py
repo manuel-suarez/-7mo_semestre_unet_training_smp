@@ -2,21 +2,19 @@ import lightning as L
 from torch import optim, nn, utils, Tensor
 
 
-class CimatModel(L.LightningModule):
-    def __init__(self, model):
+class CimatModule(L.LightningModule):
+    def __init__(self, model, optimizer, loss_fn):
         super().__init__()
         self.model = model
+        self.optimizer = optimizer
+        self.loss_fn = loss_fn
 
     def training_step(self, batch, batch_idx):
         x, _ = batch
-        # print(x.shape)
-        # x = x.view(x.size(0), -1)
-        # print(x.shape)
         z = self.model(x)
-        loss = nn.functional.cross_entropy(z, x)
+        loss = loss_fn(z, x)
         self.log("train_loss", loss)
         return loss
 
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
+        return self.optimizer
