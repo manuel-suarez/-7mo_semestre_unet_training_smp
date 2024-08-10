@@ -53,7 +53,8 @@ if __name__ == "__main__":
     )
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
-    module = L.Trainer(max_epochs=int(args.num_epochs), devices=2, accelerator="gpu")
+    module = CimatModule(model, optimizer, loss_fn)
+    trainer = L.Trainer(max_epochs=int(args.num_epochs), devices=2, accelerator="gpu")
     # Training
     print("[INFO] training the network...")
     startTime = time.time()
