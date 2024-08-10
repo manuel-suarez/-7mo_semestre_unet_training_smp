@@ -10,9 +10,9 @@ class CimatModule(L.LightningModule):
         self.loss_fn = loss_fn
 
     def training_step(self, batch, batch_idx):
-        x, _ = batch
-        z = self.model(x)
-        loss = loss_fn(z, x)
+        inputs, labels = batch
+        preds = self.model(inputs)
+        loss = self.loss_fn(preds, labels)
         self.log("train_loss", loss)
         return loss
 
