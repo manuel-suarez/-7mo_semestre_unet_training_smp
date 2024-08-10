@@ -6,4 +6,4 @@
 #SBATCH --mem=0
 #SBATCH --array=1
 
-/home/hasimoto/tools/anaconda3/envs/py3.9-pt/bin/python main.py results 10
+/home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py results 1
