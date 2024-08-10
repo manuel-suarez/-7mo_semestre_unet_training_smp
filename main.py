@@ -26,7 +26,7 @@ if __name__ == "__main__":
     slurm_node_list = os.getenv("SLURM_JOB_NODELIST")
     print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
     print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
-    print(f"SLURM_JOB_NODELIST: {slurm_nodelist}")
+    print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
     slurm_array_task_id = 1
 
     train_file = "{:02}".format(slurm_array_task_id)
@@ -42,7 +42,9 @@ if __name__ == "__main__":
     # Features to use
     feat_channels = ["ORIGIN", "ORIGIN", "VAR"]
     # Dataloaders
-    train_dataloader, valid_dataloader = prepare_dataloaders(home_dir, feat_channels, train_file, cross_file)
+    train_dataloader, valid_dataloader = prepare_dataloaders(
+        home_dir, feat_channels, train_file, cross_file
+    )
 
     # Load and configure model (segmentation_models_pytorch)
     model = smp.Unet(
@@ -55,10 +57,10 @@ if __name__ == "__main__":
     print("[INFO] training the network...")
     startTime = time.time()
     trainer.fit(
-            model=module,
-            train_dataloaders=train_dataloader,
-            val_dataloaders=valid_dataloader,
-            )
+        model=module,
+        train_dataloaders=train_dataloader,
+        val_dataloaders=valid_dataloader,
+    )
     # display total time
     endTime = time.time()
     print(
