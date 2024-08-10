@@ -3,6 +3,7 @@ import time
 import torch
 import argparse
 import pandas as pd
+import lightning as L
 import segmentation_models_pytorch as smp
 
 from data import CimatDataset
