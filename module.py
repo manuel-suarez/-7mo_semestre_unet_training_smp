@@ -51,7 +51,10 @@ class CimatModule(L.LightningModule):
         inputs, labels = batch
         preds = self.model(inputs)
         valid_loss = self.loss_fn(preds, labels)
+        self.valid_sensitivity(preds, labels)
+        self.valid_specificity(preds, labels)
         self.valid_accuracy(preds, labels)
+        self.valid_f1score(preds, labels)
         self.valid_meaniou(preds, labels)
         self.log_dict(
             {
