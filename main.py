@@ -12,6 +12,7 @@ from module import CimatModule
 from tqdm import tqdm
 from torch import nn, optim
 from torch.utils.data import DataLoader
+from datetime import datetime
 from lightning.pytorch.loggers import CSVLogger
 
 if __name__ == "__main__":
@@ -69,18 +70,22 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
     # Check logs path
     logs_path = os.path.join(
-        args.log_path,
+        args.logs_path,
         model_name,
         encoder_name,
         "dataset17_oov",
         f"train{train_file}_valid{cross_file}_epochs{num_epochs}",
     )
+    if not os.path.exists(logs_path):
+        os.makedirs(logs_path, exist_ok=True)
     logger = CSVLogger(logs_path)
     module = CimatModule(model, optimizer, loss_fn)
     trainer = L.Trainer(
         max_epochs=int(args.num_epochs), devices=2, accelerator="gpu", logger=logger
     )
     # Training
+    now = datetime.now()
+    print(f"[INFO] start time: {now}")
     print("[INFO] training the network...")
     startTime = time.time()
     trainer.fit(
@@ -90,6 +95,8 @@ if __name__ == "__main__":
     )
     # display total time
     endTime = time.time()
+    now = datetime.now()
+    print(f"[INFO] end time: {now}")
     print(
         "[INFO] total time taken to train the model: {:.2f}s".format(
             endTime - startTime
