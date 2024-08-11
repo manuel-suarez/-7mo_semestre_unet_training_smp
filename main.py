@@ -29,7 +29,6 @@ if __name__ == "__main__":
     print(f"SLURM_ARRAY_JOB_ID: {slurm_array_job_id}")
     print(f"SLURM_ARRAY_TASK_ID: {slurm_array_task_id}")
     print(f"SLURM_JOB_NODELIST: {slurm_node_list}")
-    slurm_array_task_id = 1
 
     train_file = "{:02}".format(slurm_array_task_id)
     cross_file = "{:02}".format(slurm_array_task_id)
