@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH --partition=GPU
-#SBATCH --job-name=UNet-SMP-L-2GPU-10EPOCHS-METRICS
+#SBATCH --job-name=CIMAT-ODS17-SMP-L-Unet+ResNet34
 #SBATCH --time=0
 #SBATCH --mem=0
-#SBATCH --array=1-5%1
+#SBATCH --array=1-30%1
 
-srun /home/est_posgrado_manuel.suarez/tools/anaconda3/envs/py3.9-pt/bin/python main.py results 5
+srun /home/hasimoto/tools/anaconda3/envs/py3.9-pt/bin/python main.py results logs unet resnet34 10
