@@ -41,6 +41,7 @@ class CimatModule(L.LightningModule):
                 "train_meaniou": self.train_meaniou,
             },
             prog_bar=True,
+            sync_dist=True,
             on_step=False,
             on_epoch=True,
         )
